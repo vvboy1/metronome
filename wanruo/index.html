@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>节拍器</title>
-<link rel="manifest" href="/metronome/manifest.json">
-<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/metronome/sw.js')</script>
-<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/metronome/sw.js')</script>
+<title>节拍器-宛若版</title>
+<link rel="manifest" href="/metronome/wanruo/manifest.json">
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/metronome/wanruo/sw.js')</script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/metronome/wanruo/sw.js')</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="icon.png">
@@ -164,6 +164,7 @@ body{
 // ==================== 音频引擎 ====================
 const AUDIO_DIR = 'assets/audio/';
 const SOUND_PACKS = {
+  wanruo:{name:'宛若',accent:'wr_accent.mp3',regular:'wr_regular.mp3'},
   metronome:{name:'节拍器',accent:'t7.mp3',regular:'-P.wav'},
   wood:{name:'木鱼',accent:'aH.wav',regular:'Jo.mp3'},
   drum:{name:'架子鼓',accent:'Qb.mp3',regular:'oX.mp3'},
@@ -174,7 +175,7 @@ const SOUND_PACKS = {
 class Metronome {
   constructor(){
     this.ctx=null;this.bpm=120;this.beats=4;this.noteVal=4;
-    this.beat=0;this.playing=false;this.pack='metronome';
+    this.beat=0;this.playing=false;this.pack='wanruo';
     this.flash=false;this.vib=false;this.nextTime=0;
     this.timer=null;this.look=25;this.ahead=0.1;
     this.buf={};this.loaded=false;
@@ -195,7 +196,7 @@ class Metronome {
     const f=accent?p.accent:p.regular;
     if(!f||!this.buf[f]){this._synth(c,accent);return}
     const s=c.createBufferSource();s.buffer=this.buf[f];
-    const g=c.createGain();g.gain.value=accent?1:0.5;
+    const g=c.createGain();g.gain.value=accent?1.2:0.35;
     s.connect(g);g.connect(c.destination);
     s.start(this.nextTime);
   }
