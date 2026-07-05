@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>音频文件试听</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; background: #0a0a28; color: #eee; padding: 20px; }
+  h2 { color: #4dc9f6; }
+  .file { display:flex; align-items:center; gap:12px; padding:12px; margin:6px 0; background:rgba(255,255,255,0.04); border-radius:10px; border:1px solid rgba(255,255,255,0.08); }
+  .file:hover { background:rgba(255,255,255,0.08); }
+  .name { width:120px; font-weight:600; }
+  .info { width:80px; font-size:12px; color:#889; }
+  button { padding:8px 16px; border-radius:20px; border:none; cursor:pointer; font-size:13px; }
+  .play { background:#4dc9f6; color:#0a0a28; }
+  .stop { background:#e04060; color:#fff; }
+  .pick { background:rgba(255,255,255,0.1); color:#fff; border:2px solid #4dc9f6; }
+  .picked { background:#4dc9f6; color:#0a0a28; font-weight:600; }
+  .section { margin:20px 0; padding:10px 0; border-top:1px solid rgba(255,255,255,0.1); }
+  .result { position:sticky; bottom:0; background:#111138; padding:16px; border-radius:12px; margin-top:20px; border:2px solid #4dc9f6; }
+  .result code { background:#0a0a28; padding:4px 8px; border-radius:4px; font-size:13px; white-space:pre-wrap; word-break:break-all; }
+</style>
+</head>
+<body>
+<h2>🔊 音频文件试听</h2>
+<p style="color:#889;font-size:13px;">点击播放每个文件，选出你需要的<strong style="color:#f5c362;">节拍器强拍声</strong>和<strong style="color:#ff5e7a;">节拍器弱拍声</strong></p>
+
+<div id="fileList"></div>
+
+<div class="result">
+  <strong>你的选择：</strong><br>
+  强拍(第一拍): <code id="accentPick">未选</code>
+  <button class="pick" onclick="clearPick('accent')">重选</button><br>
+  弱拍(其余拍): <code id="regularPick">未选</code>
+  <button class="pick" onclick="clearPick('regular')">重选</button><br>
+  <button style="margin-top:10px;padding:10px 24px;background:#f5c362;color:#0a0a28;border:none;border-radius:20px;font-size:15px;font-weight:600;cursor:pointer;" onclick="applyPicks()">✅ 确认选择，更新节拍器</button>
+</div>
+
+<script>
+const AUDIO_DIR = 'assets/audio/';
+const files = [
+  { name: '-P.wav', info: '0.25s, 44100Hz WAV' },
+  { name: 'aH.wav', info: '0.41s, 16000Hz WAV' },
+  { name: 'iU.wav', info: '0.20s, 48000Hz WAV' },
+  { name: '-1.mp3', info: '~1.28s MP3' },
+  { name: '04.mp3', info: '~8.36s MP3' },
+  { name: 'Jo.mp3', info: '~0.41s MP3' },
+  { name: 'MT.mp3', info: '~7.40s MP3' },
+  { name: 'Qb.mp3', info: '~0.78s MP3' },
+  { name: 'Wm.mp3', info: '~0.36s MP3' },
+  { name: 'a1.mp3', info: '~2.16s MP3' },
+  { name: 'great.mp3', info: '~0.52s MP3' },
+  { name: 'oX.mp3', info: '~0.53s MP3' },
+  { name: 't7.mp3', info: '~0.36s MP3' },
+  { name: 'upgrade.mp3', info: '~2.16s MP3' },
+];
+
+let currentAudio = null;
+let accentFile = null, regularFile = null;
+
+function playFile(name) {
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  currentAudio = new Audio(AUDIO_DIR + name);
+  currentAudio.play();
+  // 更新按钮状态
+  document.querySelectorAll('.play').forEach(b => b.textContent = '▶ 播放');
+  const btn = document.querySelector(`[data-file="${name}"] .play`);
+  if (btn) btn.textContent = '⏸ 播放中';
+  currentAudio.onended = () => {
+    if (btn) btn.textContent = '▶ 播放';
+    currentAudio = null;
+  };
+}
+
+function pickFile(name, type) {
+  if (type === 'accent') {
+    accentFile = name;
+    document.getElementById('accentPick').textContent = name;
+  } else {
+    regularFile = name;
+    document.getElementById('regularPick').textContent = name;
+  }
+  // 更新按钮样式
+  document.querySelectorAll('.pick-btn').forEach(b => {
+    const f = b.dataset.file;
+    const t = b.dataset.type;
+    b.classList.toggle('picked', (t==='accent' && f===accentFile) || (t==='regular' && f===regularFile));
+    if (t==='accent') b.textContent = (f===accentFile) ? '✓ 已是强拍' : '设为强拍';
+    if (t==='regular') b.textContent = (f===regularFile) ? '✓ 已是弱拍' : '设为弱拍';
+  });
+}
+
+function clearPick(type) {
+  if (type === 'accent') { accentFile = null; document.getElementById('accentPick').textContent = '未选'; }
+  else { regularFile = null; document.getElementById('regularPick').textContent = '未选'; }
+  document.querySelectorAll('.pick-btn').forEach(b => {
+    const t = b.dataset.type;
+    if (t === type) { b.classList.remove('picked'); b.textContent = t==='accent' ? '设为强拍' : '设为弱拍'; }
+  });
+}
+
+function applyPicks() {
+  if (!accentFile || !regularFile) { alert('请先选择强拍和弱拍音频！'); return; }
+  localStorage.setItem('metronome_accent', accentFile);
+  localStorage.setItem('metronome_regular', regularFile);
+  alert(`已保存！\n强拍: ${accentFile}\n弱拍: ${regularFile}\n\n返回节拍器页面刷新即可使用。`);
+  window.location.href = '/';
+}
+
+// 渲染
+let html = '';
+files.forEach(f => {
+  html += `
+  <div class="file" data-file="${f.name}">
+    <span class="name">${f.name}</span>
+    <span class="info">${f.info}</span>
+    <button class="play" onclick="playFile('${f.name}')">▶ 播放</button>
+    <button class="pick-btn" data-file="${f.name}" data-type="accent" onclick="pickFile('${f.name}','accent')">设为强拍</button>
+    <button class="pick-btn" data-file="${f.name}" data-type="regular" onclick="pickFile('${f.name}','regular')">设为弱拍</button>
+  </div>`;
+});
+document.getElementById('fileList').innerHTML = html;
+</script>
+</body>
+</html>
