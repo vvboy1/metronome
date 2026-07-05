@@ -1,11 +1,11 @@
 {
-  "name": "节拍器",
-  "short_name": "节拍器",
+  "name": "节拍器-宛若版",
+  "short_name": "节拍器-宛若版",
   "start_url": "/metronome/",
   "scope": "/metronome/",
   "display": "standalone",
   "background_color": "#0a0a28",
   "theme_color": "#0a0a28",
-  "description": "专业节拍器",
+  "description": "专业节拍器-宛若版",
   "icons": [{"src": "/metronome/icon.png", "sizes": "192x192", "type": "image/png"}]
 }
