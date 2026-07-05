@@ -2,6 +2,7 @@
   "name": "节拍器",
   "short_name": "节拍器",
   "start_url": "/metronome/",
+  "scope": "/metronome/",
   "display": "standalone",
   "background_color": "#0a0a28",
   "theme_color": "#0a0a28",
