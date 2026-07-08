@@ -220,7 +220,7 @@ class Metronome {
   async start(){await this.initAudio();this.ctx_();this.playing=true;this.beat=0;this.nextTime=this.ctx.currentTime+0.05;this.timer=setTimeout(()=>this.tick(),this.look)}
   stop(){this.playing=false;if(this.timer){clearTimeout(this.timer);this.timer=null}this.beat=0}
   async toggle(){if(this.playing){this.stop();return false}await this.start();return true}
-  setBpm(v){this.bpm=Math.max(20,Math.min(300,v))}
+  setBpm(v){this.bpm=Math.max(20,Math.min(300,v));try{localStorage.setItem("metro_state",JSON.stringify({bpm:this.bpm,beats:this.beats,note:this.noteVal,pack:this.pack}))}catch(e){}}
 }
 
 // ==================== UI ====================
@@ -365,8 +365,8 @@ denList.style.transform=`translateY(${-denInit*IH}px)`;
 numList.querySelectorAll('.picker-item').forEach(e=>e.classList.toggle('sel',+e.dataset.v===m.beats));
 denList.querySelectorAll('.picker-item').forEach(e=>e.classList.toggle('sel',+e.dataset.v===m.noteVal));
 
-setupPicker(numCol,numList,NUM_ITEMS,()=>m.beats,v=>{m.beats=v},v=>{m.beat=0;renderDots()},-numInit*IH);
-setupPicker(denCol,denList,DEN_ITEMS,()=>m.noteVal,v=>{m.noteVal=v},()=>{},-denInit*IH);
+setupPicker(numCol,numList,NUM_ITEMS,()=>m.beats,v=>{m.beats=v},v=>{m.beat=0;renderDots();saveState()},-numInit*IH);
+setupPicker(denCol,denList,DEN_ITEMS,()=>m.noteVal,v=>{m.noteVal=v;saveState()},()=>{},-denInit*IH);
 
 // --- 表盘旋转 ---
 const ANGLE_RANGE=270,ANGLE_START=-135;
@@ -483,6 +483,7 @@ saveBtn.onclick=()=>{
   presetRow.scrollTop=presetRow.scrollHeight;
 };
 renderPresets();
+function saveState(){try{localStorage.setItem('metro_state',JSON.stringify({bpm:m.bpm,beats:m.beats,note:m.noteVal,pack:m.pack}))}catch(e){}}
 function renderDots(){
   dots.innerHTML=Array.from({length:m.beats},(_,i)=>`<div class="beat-dot${i===0?' strong':''}" data-i="${i}"></div>`).join('');
 }
