@@ -178,6 +178,9 @@ class Metronome {
     this.flash=false;this.vib=false;this.nextTime=0;
     this.timer=null;this.look=25;this.ahead=0.1;
     this.buf={};this.loaded=false;
+    // 恢复上次状态
+    try{const s=JSON.parse(localStorage.getItem('metro_state'));
+    if(s){this.bpm=s.bpm||120;this.beats=s.beats||4;this.noteVal=s.note||4}}catch(e){}
   }
   async initAudio(){
     if(this.loaded)return;
