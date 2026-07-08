@@ -428,6 +428,12 @@ function stopTimer(){if(timerInt){clearInterval(timerInt);timerInt=null}}
 const saveBtn=$('saveBtn'),presetRow=$('presetRow');
 
 function getPresets(){return JSON.parse(localStorage.getItem('beat_presets')||'[]')}
+function savePresets(ps){localStorage.setItem('beat_presets',JSON.stringify(ps))}
+
+function isSame(a,b){return a.bpm===b.bpm&&a.beats===b.beats&&a.note===b.note}
+function removeDup(ps,p){for(let i=0;i<ps.length;i++){if(isSame(ps[i],p)){ps.splice(i,1);return true}}return false}
+function touchFront(ps,p){removeDup(ps,p);ps.unshift(p);while(ps.length>10)ps.pop()}
+
 function renderPresets(){
   const ps=getPresets();
   if(ps.length===0){presetRow.innerHTML='';return}
@@ -439,14 +445,16 @@ function renderPresets(){
       m.bpm=p.bpm;m.beats=p.beats;m.noteVal=p.note;m.beat=0;
       updateBpm();updateInd();renderDots();
       snapTo(numList,m.beats);snapTo(denList,m.noteVal);
+      // LRU: 提到最前
+      const ps2=getPresets();touchFront(ps2,p);savePresets(ps2);
+      renderPresets();
     };
     card.addEventListener('touchstart',()=>{
       pressTimer=setTimeout(()=>{
         const p=ps[+card.dataset.i];
         showConfirm(`删除 ${p.beats}/${p.note} ${p.bpm}？`,()=>{
           const ps2=getPresets();ps2.splice(+card.dataset.i,1);
-          localStorage.setItem('beat_presets',JSON.stringify(ps2));
-          renderPresets();
+          savePresets(ps2);renderPresets();
         });
       },600);
     });
@@ -457,8 +465,7 @@ function renderPresets(){
         const p=ps[+card.dataset.i];
         showConfirm(`删除 ${p.beats}/${p.note} ${p.bpm}？`,()=>{
           const ps2=getPresets();ps2.splice(+card.dataset.i,1);
-          localStorage.setItem('beat_presets',JSON.stringify(ps2));
-          renderPresets();
+          savePresets(ps2);renderPresets();
         });
       },600);
     });
@@ -478,10 +485,8 @@ function showConfirm(msg,onDel){
 
 saveBtn.onclick=()=>{
   const ps=getPresets();
-  ps.unshift({bpm:m.bpm,beats:m.beats,note:m.noteVal});
-  if(ps.length>10)ps.pop();
-  localStorage.setItem('beat_presets',JSON.stringify(ps));
-  renderPresets();
+  touchFront(ps,{bpm:m.bpm,beats:m.beats,note:m.noteVal});
+  savePresets(ps);renderPresets();
   presetRow.scrollTop=presetRow.scrollHeight;
 };
 renderPresets();
